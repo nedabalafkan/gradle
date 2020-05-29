@@ -2,8 +2,13 @@ package org.gradle.gradlebuild.test.integrationtests
 
 import accessors.groovy
 import accessors.java
+import library
 import org.gradle.api.Action
 import org.gradle.api.Project
+import org.gradle.api.attributes.Bundling
+import org.gradle.api.attributes.Category
+import org.gradle.api.attributes.LibraryElements
+import org.gradle.api.attributes.Usage
 import org.gradle.api.tasks.ClasspathNormalizer
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.SourceSet
@@ -14,7 +19,6 @@ import org.gradle.api.tasks.testing.junitplatform.JUnitPlatformOptions
 import org.gradle.gradlebuild.versioning.buildVersion
 import org.gradle.kotlin.dsl.*
 import org.gradle.plugins.ide.idea.IdeaPlugin
-import org.gradle.gradlebuild.versioning.buildVersion
 import java.util.concurrent.Callable
 
 
@@ -24,15 +28,33 @@ enum class TestType(val prefix: String, val executers: List<String>, val libRepo
 }
 
 
-internal
-fun Project.addDependenciesAndConfigurations(testType: TestType) {
-    val prefix = testType.prefix
+fun Project.addDependenciesAndConfigurations(prefix: String) {
     configurations {
         getByName("${prefix}TestImplementation") { extendsFrom(configurations["testImplementation"]) }
-        getByName("${prefix}TestRuntimeOnly") { extendsFrom(configurations["testRuntimeOnly"]) }
+        val testDistributionRuntimeOnly = create("${prefix}TestDistributionRuntimeOnly") {
+            isVisible = false
+            isCanBeResolved = false
+            isCanBeConsumed = false
+        }
+        getByName("${prefix}TestRuntimeClasspath") {
+            extendsFrom(testDistributionRuntimeOnly)
+        }
+        create("${prefix}TestDistributionRuntimeClasspath") {
+            isVisible = false
+            isCanBeResolved = true
+            isCanBeConsumed = false
+            attributes {
+                attribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, objects.named("gradle-distribution-jars"))
+                attribute(Usage.USAGE_ATTRIBUTE, objects.named(Usage.JAVA_RUNTIME))
+                attribute(Category.CATEGORY_ATTRIBUTE, objects.named(Category.LIBRARY))
+                attribute(Bundling.BUNDLING_ATTRIBUTE, objects.named(Bundling.EMBEDDED))
+            }
+            extendsFrom(testDistributionRuntimeOnly)
+        }
     }
 
     dependencies {
+        "${prefix}TestRuntimeOnly"(library("junit5_vintage"))
         "${prefix}TestImplementation"(project(":internalIntegTesting"))
     }
 }

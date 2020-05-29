@@ -17,11 +17,9 @@
 package org.gradle
 
 import org.gradle.integtests.fixtures.AbstractIntegrationSpec
-import org.gradle.integtests.fixtures.executer.GradleContextualExecuter
 import org.gradle.internal.nativeintegration.jansi.JansiStorageLocator
 import org.gradle.test.fixtures.file.TestNameTestDirectoryProvider
 import org.junit.Rule
-import spock.lang.IgnoreIf
 import spock.lang.Issue
 
 class NativeServicesIntegrationTest extends AbstractIntegrationSpec {
@@ -37,7 +35,7 @@ class NativeServicesIntegrationTest extends AbstractIntegrationSpec {
         def jansiStorage = jansiLibraryLocator.locate(nativeDir)
         library = jansiStorage.targetLibFile
 
-        executer.requireGradleDistribution().withNoExplicitTmpDir()
+        executer.requireOwnGradleUserHomeDir().withNoExplicitTmpDir()
     }
 
     def "native services libs are unpacked to gradle user home dir"() {
@@ -52,7 +50,6 @@ class NativeServicesIntegrationTest extends AbstractIntegrationSpec {
     }
 
     @Issue("GRADLE-3573")
-    @IgnoreIf({ GradleContextualExecuter.embedded })
     def "jansi library is unpacked to gradle user home dir and isn't overwritten if existing"() {
         String tmpDirJvmOpt = "-Djava.io.tmpdir=$tmpDir.testDirectory.absolutePath"
         executer.withBuildJvmOpts(tmpDirJvmOpt)

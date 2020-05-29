@@ -28,12 +28,9 @@ class CommandLineIntegrationSpec extends AbstractIntegrationSpec {
     @Rule
     JDWPUtil jdwpClient = new JDWPUtil(5005)
 
-    @IgnoreIf({ GradleContextualExecuter.parallel })
+    @IgnoreIf({ GradleContextualExecuter.parallel || GradleContextualExecuter.embedded }) // Cannot run 'embedded' because this tests an error created during startup
     @Unroll
     def "reasonable failure message when --max-workers=#value"() {
-        given:
-        requireGradleDistribution() // otherwise exception gets thrown in testing infrastructure
-
         when:
         args("--max-workers=$value")
 
@@ -47,11 +44,9 @@ class CommandLineIntegrationSpec extends AbstractIntegrationSpec {
         value << ["-1", "0", "foo", " 1"]
     }
 
+    @IgnoreIf({ GradleContextualExecuter.embedded }) // Cannot run 'embedded' because this tests an error created during startup
     @Unroll
     def "reasonable failure message when org.gradle.workers.max=#value"() {
-        given:
-        requireGradleDistribution() // otherwise exception gets thrown in testing infrastructure
-
         when:
         args("-Dorg.gradle.workers.max=$value")
 

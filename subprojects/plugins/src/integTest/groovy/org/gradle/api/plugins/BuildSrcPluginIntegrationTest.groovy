@@ -92,7 +92,6 @@ class BuildSrcPluginIntegrationTest extends AbstractIntegrationSpec {
 
     def "build src plugin cannot access Gradle implementation dependencies"() {
         when:
-        requireGradleDistribution()
         file("buildSrc/src/main/groovy/pkg/BuildSrcPlugin.groovy") << """
             package pkg
             import ${com.google.common.collect.ImmutableList.name}
@@ -108,7 +107,6 @@ class BuildSrcPluginIntegrationTest extends AbstractIntegrationSpec {
 
     def "use of buildSrc does not expose Gradle runtime dependencies to build script"() {
         when:
-        requireGradleDistribution()
         file("buildSrc/src/main/groovy/pkg/BuildSrcPlugin.groovy") << """
             package pkg
             class BuildSrcPlugin {

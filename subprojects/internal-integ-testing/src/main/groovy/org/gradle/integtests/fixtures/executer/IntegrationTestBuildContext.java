@@ -16,7 +16,6 @@
 
 package org.gradle.integtests.fixtures.executer;
 
-import com.google.common.base.CaseFormat;
 import org.gradle.test.fixtures.file.TestFile;
 import org.gradle.util.GradleVersion;
 
@@ -32,7 +31,7 @@ public class IntegrationTestBuildContext {
     public static final IntegrationTestBuildContext INSTANCE = new IntegrationTestBuildContext();
 
     public TestFile getGradleHomeDir() {
-        return file("integTest.gradleHomeDir", null);
+        return nullableFile("integTest.gradleHomeDir", null);
     }
 
     public TestFile getSamplesDir() {
@@ -52,12 +51,7 @@ public class IntegrationTestBuildContext {
     }
 
     public TestFile getGradleUserHomeDir() {
-        return file("integTest.gradleUserHomeDir", "intTestHomeDir").file("worker-1");
-    }
-
-    @Nullable
-    public TestFile getGradleGeneratedApiJarCacheDir() {
-        return optionalFile("integTest.gradleGeneratedApiJarCacheDir");
+        return file("integTest.gradleUserHomeDir", "intTestHomeDir/distributions-unknown");
     }
 
     public TestFile getTmpDir() {
@@ -70,10 +64,6 @@ public class IntegrationTestBuildContext {
 
     public GradleVersion getVersion() {
         return GradleVersion.current();
-    }
-
-    public String getCurrentSubprojectName() {
-        return CaseFormat.LOWER_HYPHEN.to(CaseFormat.LOWER_CAMEL, getGradleHomeDir().getParentFile().getParentFile().getName());
     }
 
     /**
@@ -108,6 +98,18 @@ public class IntegrationTestBuildContext {
         }
         if (defaultPath == null) {
             throw new RuntimeException("You must set the '" + propertyName + "' property to run the integration tests.");
+        }
+        return testFile(defaultPath);
+    }
+
+    @Nullable
+    protected static TestFile nullableFile(String propertyName, String defaultPath) {
+        TestFile testFile = optionalFile(propertyName);
+        if (testFile != null) {
+            return testFile;
+        }
+        if (defaultPath == null) {
+            return null;
         }
         return testFile(defaultPath);
     }
